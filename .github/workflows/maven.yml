@@ -49,4 +49,17 @@ jobs:
       run: docker push ${{ env.imagename }}
 
 
+deploy:
+    if: github.ref_type == 'tag'
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy Docker service on Render
+        run: |
+          echo "Triggering Docker deploy on Render..."
+          curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_BACK }}
 
+      - name: Deploy Frontend (Static Site) on Render
+        run: |
+          echo "Triggering Frontend deploy on Render..."
+          curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_FRONT }}
