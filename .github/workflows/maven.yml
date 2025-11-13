@@ -8,6 +8,9 @@
 
 # Test change in develop for test environement 
 
+
+
+
 name: Java CI with Maven
 
 on:
@@ -63,5 +66,6 @@ jobs:
 
         - name: Deploy Frontend (Static Site) on Render
           run: |
+            echo "Triggering Frontend deploy on Render..."
             echo "Triggering Frontend deploy on Render..."
             curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_FRONT }}
