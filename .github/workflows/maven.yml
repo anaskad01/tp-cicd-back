@@ -14,6 +14,7 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
@@ -39,34 +40,30 @@ jobs:
       - name: Push Docker image
         run: docker push ${{ env.imagename }}
 
-  deploy:
+ 
+  deploy-dev:
     needs: build
     runs-on: ubuntu-latest
-
-    if: |
-      github.ref == 'refs/heads/develop' ||
-      github.ref == 'refs/heads/master' ||
-      startsWith(github.ref, 'refs/tags/')
-
-    environment: ${{ 
-      github.ref == 'refs/heads/develop' && 'Development' ||
-      (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/')) && 'Production'
-    }}
+    if: github.ref == 'refs/heads/develop'
+    environment: Development
 
     steps:
-      - name: Select Render hook based on environment
-        id: choose
-        run: |
-          if [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
-            echo "hook_back=${{ secrets.RENDER_DEPLOY_HOOK_BACK }}" >> $GITHUB_OUTPUT
-            echo "hook_front=${{ secrets.RENDER_DEPLOY_HOOK_FRONT }}" >> $GITHUB_OUTPUT
-          else
-            echo "hook_back=${{ secrets.RENDER_PROD_HOOK_BACK }}" >> $GITHUB_OUTPUT
-            echo "hook_front=${{ secrets.RENDER_PROD_HOOK_FRONT }}" >> $GITHUB_OUTPUT
-          fi
+      - name: Deploy Backend on Render (DEV)
+        run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_BACK }}
 
-      - name: Deploy Backend on Render
-        run: curl -X POST ${{ steps.choose.outputs.hook_back }}
+      - name: Deploy Frontend on Render (DEV)
+        run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_FRONT }}
 
-      - name: Deploy Frontend on Render
-        run: curl -X POST ${{ steps.choose.outputs.hook_front }}
+
+  deploy-prod:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/')
+    environment: Production
+
+    steps:
+      - name: Deploy Backend on Render (PROD)
+        run: curl -X POST ${{ secrets.RENDER_PROD_HOOK_BACK }}
+
+      - name: Deploy Frontend on Render (PROD)
+        run: curl -X POST ${{ secrets.RENDER_PROD_HOOK_FRONT }}
