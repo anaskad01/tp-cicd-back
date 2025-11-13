@@ -49,11 +49,11 @@ jobs:
       run: docker push ${{ env.imagename }}
 
 
-deploy:
-    if: github.ref_type == 'tag'
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
+#deploy:
+#    if: github.ref_type == 'tag'
+#    needs: build
+#    runs-on: ubuntu-latest
+#    steps:
       - name: Deploy Docker service on Render
         run: |
           echo "Triggering Docker deploy on Render..."
